@@ -1,0 +1,22 @@
+name: nget
+version: 0.1.0
+author: Evan Stoll <evanjsx@gmail.com>
+args:
+    - channel:
+        short: c
+        long: channel
+        value_name: CHANNEL
+        help: the nix channel to use
+        takes_value: true
+    - package:
+        short: p
+        long: package
+        value_name: PACKAGE
+        takes_value: true
+        help: the package to query
+    - attribute:
+        short: a
+        long: attr
+        value_name: ATTR
+        help: the attribute to query
+        takes_value: true
