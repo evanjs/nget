@@ -1,9 +1,8 @@
-use clap::{load_yaml, value_t, value_t_or_exit, values_t, App};
+use clap::{load_yaml, value_t, value_t_or_exit, App};
 
 use log::*;
 
 use std::process;
-use std::process::{exit, ExitStatus};
 use std::str;
 
 use failure;
@@ -13,17 +12,22 @@ fn main() -> Result<(), failure::Error> {
     let yaml = load_yaml!("cli.yml");
     let app = App::from_yaml(yaml);
     let matches = app.get_matches();
+    //dbg!(&matches);
 
     let channel = value_t!(matches, "channel", String).unwrap_or("nixos".to_owned());
+    debug!("{:?}", &channel);
     let nix_channel = format!("<{}>", channel);
+    debug!("{:?}", &nix_channel);
     let package = value_t_or_exit!(matches, "package", String);
-    let attribute = value_t!(matches, "attr", String).unwrap_or(String::from(""));
-    let package_attribute = match Some(attribute) {
-        Some(s) => format!("{}.{}", package, s),
-        _ => package,
+    debug!("{:?}", &package);
+    let attribute = value_t!(matches, "attribute", String).unwrap_or("".to_owned());
+    debug!("{:?}", &attribute);
+    let package_attribute = match attribute.as_str() {
+        "" => package,
+        s => format!("{}.{}", package, s),
     };
+    debug!("{:?}", &package_attribute);
 
-    // TODO: investigate rnix implementation -- https://gitlab.com/jD91mZM2/rnix
     let output = process::Command::new("nix-instantiate")
         .arg("--eval")
         .arg(nix_channel)
@@ -31,6 +35,8 @@ fn main() -> Result<(), failure::Error> {
         .arg(&package_attribute)
         .output()
         .expect("Failed to evaluate nix property");
+
+    trace!("{:?}", &output);
 
     match output.status.success() {
         true => println!(
